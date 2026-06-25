@@ -45,8 +45,8 @@ export async function POST(request: Request) {
       name: 'token',
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: request.url.startsWith('https:') || request.headers.get('x-forwarded-proto') === 'https',
+      sameSite: 'lax', // Use 'lax' to prevent navigation redirect-loops on external domains
       maxAge: 60 * 60 * 24 // 24 hours
     });
     

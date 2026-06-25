@@ -70,8 +70,7 @@ function LoginForm() {
       } else {
         setSuccess(true);
         setTimeout(() => {
-          router.push(callbackUrl);
-          router.refresh();
+          window.location.href = callbackUrl;
         }, 800);
       }
     } catch (err) {
