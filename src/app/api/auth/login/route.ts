@@ -46,8 +46,7 @@ export async function POST(request: Request) {
       value: token,
       httpOnly: true,
       secure: request.url.startsWith('https:') || request.headers.get('x-forwarded-proto') === 'https',
-      sameSite: 'lax', // Use 'lax' to prevent navigation redirect-loops on external domains
-      maxAge: 60 * 60 * 24 // 24 hours
+      sameSite: 'lax' // Use 'lax' to prevent navigation redirect-loops on external domains
     });
     
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
