@@ -39,6 +39,39 @@ export default function BackupPage() {
   const [resetting, setResetting] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [updateLog, setUpdateLog] = useState<{ stdout: string; stderr: string } | null>(null);
+  const [restarting, setRestarting] = useState(false);
+
+  const handleRestartServer = () => {
+    triggerConfirm(
+      "RESTART PORTAL SERVER",
+      "WARNING: This will terminate the active Node.js server process. If the portal is deployed under a process manager like PM2, Systemd, or Docker, the container/process will reload automatically with the newly built code. If it is run manually, you will need to restart it manually from the host terminal. Do you want to proceed?",
+      async () => {
+        setRestarting(true);
+        try {
+          const res = await fetch('/api/system/update?action=restart', {
+            method: 'POST'
+          });
+          if (res.ok) {
+            alert('Server process kill signal sent. Reloading the page in 5 seconds...');
+            setTimeout(() => {
+              window.location.reload();
+            }, 5000);
+          } else {
+            const data = await res.json();
+            alert(data.error || 'Restart request failed');
+            setRestarting(false);
+          }
+        } catch (err) {
+          console.error(err);
+          // A network error is expected because the server kills itself immediately
+          alert('Server process exited. Reloading page in 5 seconds...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        }
+      }
+    );
+  };
 
   const handleUpdatePortal = async () => {
     setUpdating(true);
@@ -258,7 +291,7 @@ export default function BackupPage() {
           <Card className="border-slate-900 bg-slate-900/40 backdrop-blur-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold text-white flex items-center space-x-2">
-                <RefreshCw className={`w-4 h-4 text-indigo-400 ${updating ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-indigo-400 ${updating || restarting ? 'animate-spin' : ''}`} />
                 <span>Portal Updates</span>
               </CardTitle>
               <CardDescription className="text-[10px] text-slate-400">
@@ -266,33 +299,62 @@ export default function BackupPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Fetch, Pull & Build */}
               <div className="space-y-2">
-                <Label className="text-slate-350 text-[11px] font-semibold">Pull from Git Remote Repository</Label>
+                <Label className="text-slate-350 text-[11px] font-semibold">1. Pull & Rebuild Portal</Label>
                 <p className="text-[10px] text-slate-400 leading-normal mb-1.5">
-                  Downloads latest files from the connected GitHub branch, pulls schema updates, and regenerates Prisma database bindings.
+                  Downloads latest files from the connected GitHub branch, installs new dependencies, pulls database schema updates, and compiles the Next.js bundle.
                 </p>
                 <Button
                   type="button"
                   onClick={handleUpdatePortal}
-                  disabled={backingUp || restoring || resetting || updating}
+                  disabled={backingUp || restoring || resetting || updating || restarting}
                   className="w-full bg-indigo-650 hover:bg-indigo-550 text-white flex items-center justify-center space-x-2 cursor-pointer h-10 text-xs font-bold"
                 >
                   {updating ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                      <span>Fetching & Pulling...</span>
+                      <span>Pulling & Rebuilding...</span>
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 shrink-0" />
-                      <span>Fetch & Pull Updates</span>
+                      <span>Fetch, Pull & Rebuild</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <hr className="border-slate-800" />
+
+              {/* Restart Portal */}
+              <div className="space-y-2">
+                <Label className="text-slate-350 text-[11px] font-semibold">2. Restart Portal Server</Label>
+                <p className="text-[10px] text-slate-400 leading-normal mb-1.5">
+                  Kills the active Node.js server process to reload the newly built code. Relies on Docker or PM2 to restart the service automatically.
+                </p>
+                <Button
+                  type="button"
+                  onClick={handleRestartServer}
+                  disabled={backingUp || restoring || resetting || updating || restarting}
+                  className="w-full bg-teal-650 hover:bg-teal-550 text-white flex items-center justify-center space-x-2 cursor-pointer h-10 text-xs font-bold"
+                >
+                  {restarting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      <span>Sending Kill Signal...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 shrink-0" />
+                      <span>Restart Portal Server</span>
                     </>
                   )}
                 </Button>
               </div>
 
               {updateLog && (
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 pt-2 border-t border-slate-800">
                   <Label className="text-[10px] text-slate-400">Update Output Console</Label>
                   <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[9px] text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap leading-normal scrollbar-thin">
                     {updateLog.stdout && <div className="text-slate-300">{updateLog.stdout}</div>}
