@@ -294,12 +294,13 @@ export default function DocumentManagerPage() {
     }
   }, [selectedProjectId]);
 
-  // Fetch documents when the selected project or folder changes
+  // Fetch documents when the selected project, folder, or search query changes
   useEffect(() => {
     if (selectedProjectId) {
-      fetchDocuments(selectedProjectId, selectedFolderId);
+      const fetchFolderId = searchQuery ? 'all' : selectedFolderId;
+      fetchDocuments(selectedProjectId, fetchFolderId);
     }
-  }, [selectedProjectId, selectedFolderId]);
+  }, [selectedProjectId, selectedFolderId, searchQuery]);
 
   // Poll documents while any document is pre-rendering
   useEffect(() => {
@@ -309,11 +310,12 @@ export default function DocumentManagerPage() {
     if (!hasPreRendering) return;
 
     const interval = setInterval(() => {
-      fetchDocuments(selectedProjectId, selectedFolderId, true);
+      const fetchFolderId = searchQuery ? 'all' : selectedFolderId;
+      fetchDocuments(selectedProjectId, fetchFolderId, true);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [selectedProjectId, selectedFolderId, documents]);
+  }, [selectedProjectId, selectedFolderId, documents, searchQuery]);
 
   useEffect(() => {
     setTargetFolderId('root');

@@ -217,9 +217,10 @@ function PublicProjectDocumentsContent({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (projectId) {
-      fetchDocuments(selectedFolderId);
+      const fetchFolderId = searchQuery ? 'all' : selectedFolderId;
+      fetchDocuments(fetchFolderId);
     }
-  }, [selectedFolderId, projectId]);
+  }, [selectedFolderId, projectId, searchQuery]);
 
   // Validate the magic link token if present
   useEffect(() => {
