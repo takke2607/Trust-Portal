@@ -1,0 +1,136 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String?
+  email          String          @unique
+  passwordHash   String
+  role           String          @default("COMPLIANCE_MANAGER") // ADMIN, COMPLIANCE_MANAGER, PUBLIC
+  isEnabled      Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  auditLogs      AuditLog[]
+  backups        BackupRecord[]
+  accessRequests AccessRequest[]
+}
+
+model Project {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  isPublic    Boolean    @default(false)
+  isArchived  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  folders     Folder[]
+  documents   Document[]
+}
+
+model Folder {
+  id             String     @id @default(uuid())
+  name           String
+  projectId      String
+  project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId       String?
+  parentFolder   Folder?    @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  childFolders   Folder[]   @relation("FolderToFolder")
+  documents      Document[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Document {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  folderId         String?
+  folder           Folder?           @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  isPublicApproved Boolean           @default(false)
+  isDeleted        Boolean           @default(false)
+  tags             Tag[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  versions         DocumentVersion[]
+  accessRequests   AccessRequest[]
+}
+
+model Tag {
+  id         String   @id @default(uuid())
+  name       String
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([name, documentId])
+}
+
+model DocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  filePath      String
+  fileSize      Int
+  mimeType      String
+  uploadedById  String?
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  ipAddress String?
+  metadata  String?  // SQLite uses simple text for JSON; we will store JSON strings here
+  timestamp DateTime @default(now())
+}
+
+model BackupRecord {
+  id           String   @id @default(uuid())
+  fileName     String
+  filePath     String
+  status       String
+  createdById  String?
+  createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+}
+
+model AccessRequest {
+  id             String    @id @default(uuid())
+  requesterEmail String
+  reason         String?
+  documentId     String
+  document       Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  token          String?   @unique
+  expiresAt      DateTime?
+  approvedById   String?
+  approvedBy     User?     @relation(fields: [approvedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Certification {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String   // Certified, Audited, Compliant, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SystemSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
