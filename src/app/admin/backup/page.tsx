@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   CheckCircle,
   FileArchive,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,30 @@ export default function BackupPage() {
   const [restoring, setRestoring] = useState(false);
   const [restoreFile, setRestoreFile] = useState<File | null>(null);
   const [resetting, setResetting] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [updateLog, setUpdateLog] = useState<{ stdout: string; stderr: string } | null>(null);
+
+  const handleUpdatePortal = async () => {
+    setUpdating(true);
+    setUpdateLog(null);
+    try {
+      const res = await fetch('/api/system/update', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setUpdateLog({ stdout: data.stdout || '', stderr: data.stderr || '' });
+        alert('Portal update pull executed successfully. Check logs below for details.');
+      } else {
+        setUpdateLog({ stdout: data.stdout || '', stderr: data.error || data.stderr || 'Update failed' });
+        alert(data.error || 'Update failed. Check logs below.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setUpdateLog({ stdout: '', stderr: err.message || 'Network error occurred' });
+      alert('Network error occurred during update.');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleResetPortal = () => {
     triggerConfirm(
@@ -226,6 +251,55 @@ export default function BackupPage() {
                   )}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Portal Update */}
+          <Card className="border-slate-900 bg-slate-900/40 backdrop-blur-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold text-white flex items-center space-x-2">
+                <RefreshCw className={`w-4 h-4 text-indigo-400 ${updating ? 'animate-spin' : ''}`} />
+                <span>Portal Updates</span>
+              </CardTitle>
+              <CardDescription className="text-[10px] text-slate-400">
+                Fetch and apply the latest repository updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-slate-350 text-[11px] font-semibold">Pull from Git Remote Repository</Label>
+                <p className="text-[10px] text-slate-400 leading-normal mb-1.5">
+                  Downloads latest files from the connected GitHub branch, pulls schema updates, and regenerates Prisma database bindings.
+                </p>
+                <Button
+                  type="button"
+                  onClick={handleUpdatePortal}
+                  disabled={backingUp || restoring || resetting || updating}
+                  className="w-full bg-indigo-650 hover:bg-indigo-550 text-white flex items-center justify-center space-x-2 cursor-pointer h-10 text-xs font-bold"
+                >
+                  {updating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      <span>Fetching & Pulling...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 shrink-0" />
+                      <span>Fetch & Pull Updates</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {updateLog && (
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-slate-400">Update Output Console</Label>
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[9px] text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap leading-normal scrollbar-thin">
+                    {updateLog.stdout && <div className="text-slate-300">{updateLog.stdout}</div>}
+                    {updateLog.stderr && <div className="text-rose-400 mt-1">{updateLog.stderr}</div>}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
