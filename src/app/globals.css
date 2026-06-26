@@ -323,14 +323,12 @@
 }
 
 /* Keep text-white white on button components, spinners, or items on solid brand bg */
-button, 
-.button, 
-[role="button"], 
-[type="submit"],
 .bg-indigo-600,
 .bg-indigo-500,
 .bg-red-650,
 .bg-red-500,
+.bg-emerald-600,
+.bg-emerald-500,
 .bg-primary {
   &.text-white, & .text-white {
     color: #FAF9F6 !important;
