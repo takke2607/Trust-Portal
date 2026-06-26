@@ -55,13 +55,18 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="relative rounded-2xl bg-gradient-to-r from-indigo-900 to-purple-900 p-6 md:p-8 overflow-hidden shadow-lg border border-indigo-500/10">
-        <div className="absolute top-0 right-0 translate-x-12 -translate-y-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl" />
+      <div className="relative rounded-xl bg-slate-900 border border-slate-800 p-6 md:p-8 overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-24 h-24 border-b border-l border-slate-800/60 pointer-events-none opacity-40 hidden sm:block">
+          <div className="w-full h-full border-b border-l border-dashed border-slate-800/40 translate-x-2 -translate-y-2" />
+        </div>
         <div className="relative z-10 space-y-2">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
+          <div className="text-[10px] font-mono tracking-[0.12em] text-indigo-600 font-bold uppercase">
+            01 — SYSTEM MANAGEMENT CONSOLE
+          </div>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-100">
             Welcome back, {user?.name || 'Administrator'}!
           </h1>
-          <p className="text-indigo-200 text-sm max-w-xl">
+          <p className="text-slate-600 text-xs md:text-sm max-w-xl leading-relaxed">
             You have full authorization to manage, review, and configure the compliance repositories, access protocols, and disaster recovery processes.
           </p>
         </div>

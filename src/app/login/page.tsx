@@ -159,11 +159,11 @@ function LoginForm() {
               <Button
                 type="submit"
                 disabled={loading || success}
-                className="w-full bg-white hover:bg-slate-200 text-black font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer select-none"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer select-none"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin text-black" />
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin text-white" />
                     Signing in...
                   </>
                 ) : (
