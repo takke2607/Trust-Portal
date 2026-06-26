@@ -86,10 +86,10 @@ export function parseMarkdownToHtml(md: string): string {
   html = html.replace(/_(.*?)_/g, '<em>$1</em>');
 
   // Inline code: `code`
-  html = html.replace(/`(.*?)`/g, '<code class="bg-slate-900/60 text-indigo-300 px-1.5 py-0.5 rounded font-mono text-[11px]">$1</code>');
+  html = html.replace(/`(.*?)`/g, '<code class="bg-slate-900/60 text-indigo-600 px-1.5 py-0.5 rounded font-mono text-[11px]">$1</code>');
 
   // Links: [text](url)
-  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-indigo-400 hover:text-indigo-300 underline font-semibold transition-colors">$1</a>');
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-indigo-400 hover:text-indigo-500 underline font-semibold transition-colors">$1</a>');
 
   return html;
 }

@@ -120,6 +120,24 @@ export default function AdminLayoutClient({ user, children }: AdminLayoutClientP
   };
 
   React.useEffect(() => {
+    // Validate that this tab has an active session state
+    const activeSession = sessionStorage.getItem('activeSession');
+    if (!activeSession) {
+      // If the tab was closed and reopened, clear the token and force login
+      const performSessionLogout = async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (err) {
+          console.error('Session clearance logout failed:', err);
+        } finally {
+          window.location.href = '/login';
+        }
+      };
+      performSessionLogout();
+    }
+  }, []);
+
+  React.useEffect(() => {
     fetchBranding();
     
     // Listen to custom settings updated event to reload branding instantly
@@ -136,6 +154,7 @@ export default function AdminLayoutClient({ user, children }: AdminLayoutClientP
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
+        sessionStorage.removeItem('activeSession');
         router.push('/login');
         router.refresh();
       }

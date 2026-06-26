@@ -174,7 +174,7 @@ export default function LogsPage() {
                           <TableCell colSpan={5} className="pl-12 pr-6 py-4">
                             <div className="space-y-2">
                               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Log Metadata Payload</p>
-                              <pre className="p-4 bg-slate-950 border border-slate-850 rounded-lg text-xs font-mono text-indigo-400 overflow-x-auto max-w-full">
+                              <pre className="p-4 bg-slate-950 border border-slate-850 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto max-w-full">
                                 {log.metadata ? JSON.stringify(JSON.parse(log.metadata), null, 2) : 'No metadata payload.'}
                               </pre>
                             </div>

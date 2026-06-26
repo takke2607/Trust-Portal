@@ -68,6 +68,7 @@ function LoginForm() {
       if (!res.ok) {
         setError(data.error || 'Authentication failed');
       } else {
+        sessionStorage.setItem('activeSession', 'true');
         setSuccess(true);
         setTimeout(() => {
           window.location.href = callbackUrl;
